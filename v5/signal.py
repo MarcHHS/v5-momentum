@@ -61,14 +61,15 @@ def measure(B, t, j):
         return None
     Hh = max(h[k] for k in up)
     hi = max(k for k in up if h[k] == Hh)
-    Ll = min(l[k] for k in range(max(0, hi - C.RALLY_LOW_LOOKBACK), hi + 1))
+    # 窗长是 RALLY_LOW_LOOKBACK 根（含前高那一根），所以起点是 hi-(N-1)
+    Ll = min(l[k] for k in range(max(0, hi - C.RALLY_LOW_LOOKBACK + 1), hi + 1))
     T = min(Hh, P + (P - Ll))
 
     # 缩量比：回调期均量 ÷ 上涨末段（含前高当日）均量
     pb = list(range(hi + 1, j + 1))
     pbr = None
     if pb:
-        base_lo = max(0, hi - C.RALLY_LOW_LOOKBACK)
+        base_lo = max(0, hi - C.RALLY_LOW_LOOKBACK + 1)
         den = sum(v[k] for k in range(base_lo, hi + 1)) / (hi - base_lo + 1)
         pbr = (sum(v[k] for k in pb) / len(pb)) / den if den else None
     return dict(P=P, T=T, A=B['atr'][t], pbr=pbr, j=j, date=B['d'][j])
