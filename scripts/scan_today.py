@@ -109,16 +109,21 @@ def main():
     print('拉实时快照...')
     qs = data.quote(codes)
     src = data.detect_source()
-    print('快照 %d/%d    K线源 %s    结构基准：%s'
-          % (len(qs), len(codes), src,
-             '昨日收盘' if SC.is_market_open() else '今日收盘'))
+    print('快照 %d/%d    K线源 %s' % (len(qs), len(codes), src))
 
     rows, failed = SC.scan(codes, workers=args.workers, quotes=qs, progress=True)
     f = SC.funnel(len(codes), rows)
     seg, _ = SC.bucket(rows)
 
-    print('\n口径：A 股主板 | 前复权日线 | 结构=昨日收盘确认，价格=%s 实时'
-          % time.strftime('%H:%M'))
+    # 结构基准直接取自实际参与判定的那根K（conf['base']），不靠时间猜：
+    # 盘中剔除当日未完成K用昨日，收盘后用今日，非交易日仍是上一个交易日。
+    basis = '今日收盘'
+    if rows:
+        base_date = (rows[0]['conf'].get('base') or '')[:10]
+        if base_date and base_date != time.strftime('%Y-%m-%d'):
+            basis = '昨日收盘（%s）' % base_date
+    print('\n口径：A 股主板 | 前复权日线 | 结构=%s确认，价格=%s 实时'
+          % (basis, time.strftime('%H:%M')))
     if failed:
         print('失败 %d 只：%s' % (len(failed), failed[:5]))
     print('\n漏斗：全市场 %d → 有结构 %d → 除价格外全过 %d → 价格在买区内 %d'

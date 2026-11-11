@@ -208,6 +208,7 @@ def quote(codes):
                     mcap=float(f[45]) if f[45] else 0.0,         # 亿元
                     lb=float(f[49]) if f[49] else 0.0,
                     avg=float(f[51]) if f[51] else 0.0,
+                    ts=f[30] if len(f) > 30 else '',            # 快照成交时间 yyyymmddHHMMSS
                 )
             except Exception:
                 continue
@@ -215,11 +216,21 @@ def quote(codes):
 
 
 def merge_today(ks, q):
-    """把实时快照拼成当日合成K线，替换掉数据源可能带出的半根K。"""
+    """把实时快照拼成当日合成K线，替换掉数据源可能带出的半根K。
+
+    只在该快照确实属于"今天"时才拼：快照自带的 f[30] 是数据源的真实成交时间。
+    周末和节假日，数据源返回的仍是上一个交易日的快照，不看这个时间戳就会
+    凭空 append 一根日期写着周六、价格等于周五收盘的假K线，把结构算歪。
+
+    q 里没有 ts 字段时（老调用方）保持旧行为，直接拼。
+    """
     if not (q.get('vol', 0) > 0 and q.get('px', 0) > 0):
         return list(ks)
     ks = list(ks)
     today = time.strftime('%Y-%m-%d')
+    ts = (q.get('ts') or '')[:8]
+    if ts and ts != today.replace('-', ''):
+        return ks                                  # 快照不是今天的，不拼假K
     bar = [today, q['open'], q['px'], q['high'], q['low'],
            q['vol'] * 100.0, q['amt'] * 1e8]     # 手->股，亿元->元
     if ks and ks[-1][0] == today:
