@@ -1,0 +1,11 @@
+# 本项目只用 Python 标准库，没有任何第三方依赖。
+# Python 3.9+ 即可直接运行。
+#
+# 需要的能力全部来自自带模块：
+#   urllib.request  HTTP 请求
+#   json            数据解析
+#   concurrent.futures  并发拉取
+#   csv / argparse  命令行与导出
+#
+# 如果你以后引入了第三方库（比如 pandas 做分析），
+# 把依赖写在这里，不要直接 import 后就当没事发生。
