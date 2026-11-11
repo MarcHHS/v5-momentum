@@ -14,7 +14,7 @@ A 股主板的**回调买入信号系统**。核心不是预测涨跌，而是�
 克隆下来不需要准备任何数据文件，指定几只代码就能看到完整判定：
 
 ```bash
-git clone https://github.com/MarcHHS/v5---momentum.git
+git clone https://github.com/MarcHHS/v5-momentum.git
 cd v5-momentum
 python3 scripts/scan_today.py --codes sz002415,sz000423,sh600809,sz002044,sh600519
 ```
